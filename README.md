@@ -12,6 +12,10 @@ Vitrine de ofertas com Next.js App Router, React, Tailwind CSS e Supabase. O cat
 5. Conecte o repositório GitHub à Vercel para publicar o site e habilite o GitHub Actions. Cadastre `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` em **Settings → Secrets and variables → Actions → New repository secret** no GitHub. O primeiro sincronismo pode ser iniciado na aba **Actions → Sync Mercado Livre profile → Run workflow**; os seguintes são agendados de hora em hora.
 6. A chave `service_role` é usada apenas pelo GitHub Actions para gravar no banco. Não a configure na Vercel, no `.env.local`, no `.env.example`, no navegador ou em variáveis `NEXT_PUBLIC_*`.
 
+## Cupons
+
+A página [`/cupons`](./src/app/cupons/page.tsx) consulta no servidor as páginas de cupons da Méliuz para Mercado Livre, Shopee e AliExpress. As respostas são armazenadas em cache por até uma hora; não é necessário criar uma tabela no Supabase nem configurar outro workflow. Os códigos são removidos quando deixam de aparecer na fonte após a atualização do cache. A Méliuz não informa datas confiáveis de vencimento para todos os cupons, e a fonte pode levar algum tempo para removê-los.
+
 O sincronizador importa os produtos exibidos publicamente no perfil; não consegue ler produtos privados ou outros itens da conta. Como o Mercado Livre não fornece um feed oficial para essa lista, a rotina interpreta a página pública e pode precisar de ajustes se o formato mudar ou o acesso automatizado for bloqueado. Em caso de erro, ela não apaga produtos já cadastrados. Verifique no painel de afiliados se o parâmetro `matt_tool` está atribuindo as comissões esperadas.
 
 ## Desenvolvimento

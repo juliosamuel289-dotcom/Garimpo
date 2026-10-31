@@ -90,6 +90,25 @@ main {
   font-size: 0.76rem;
 }
 
+.site-nav {
+  position: absolute;
+  left: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.site-nav a {
+  color: var(--green);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.site-nav a:hover {
+  text-decoration: underline;
+}
+
 .theme-toggle {
   position: absolute;
   right: 0;
@@ -543,6 +562,172 @@ main {
   text-align: center;
 }
 
+.coupon-intro {
+  padding: 58px 0 42px;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.coupon-intro h1 {
+  margin: 12px 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6vw, 3.8rem);
+  font-weight: 500;
+}
+
+.coupon-intro > p:last-child {
+  max-width: 640px;
+  margin: 0 auto;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.coupon-catalog {
+  padding: 28px 0 64px;
+}
+
+.coupon-disclaimer {
+  margin-bottom: 30px;
+}
+
+.coupon-updated {
+  margin: 0 0 28px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.coupon-store-section + .coupon-store-section {
+  margin-top: 40px;
+}
+
+.coupon-store-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.coupon-store-heading h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 500;
+}
+
+.coupon-store-heading a {
+  color: var(--green);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.coupon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+}
+
+.coupon-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: 0 3px 12px rgb(29 40 36 / 4%);
+}
+
+.coupon-card .eyebrow {
+  font-size: 0.65rem;
+}
+
+.coupon-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.coupon-rules {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.coupon-code {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 7px 5px 12px;
+  border: 1px dashed var(--green);
+  border-radius: 8px;
+  background: var(--subtle);
+}
+
+.coupon-code > span {
+  overflow-wrap: anywhere;
+  color: var(--green);
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.coupon-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.coupon-copy-button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--green);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.coupon-copy-button:hover {
+  background: var(--green-hover);
+}
+
+.coupon-copy-button:focus-visible,
+.coupon-store-link:focus-visible,
+.site-nav a:focus-visible,
+.coupon-store-heading a:focus-visible {
+  outline: 2px solid #8da795;
+  outline-offset: 2px;
+}
+
+.coupon-copy-message {
+  color: var(--muted);
+  font-size: 0.65rem;
+  text-align: right;
+}
+
+.coupon-store-link {
+  margin-top: auto;
+  color: var(--green);
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.coupon-store-link:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 620px) {
   main {
     width: min(100% - 36px, 480px);
@@ -550,6 +735,10 @@ main {
 
   .site-header {
     height: 76px;
+  }
+
+  .site-nav a {
+    font-size: 0.75rem;
   }
 
   .intro {
@@ -630,6 +819,20 @@ main {
   .pagination {
     gap: 10px;
     font-size: 0.75rem;
+  }
+
+  .coupon-intro {
+    padding: 42px 0 32px;
+  }
+
+  .coupon-catalog {
+    padding: 24px 0 48px;
+  }
+
+  .coupon-store-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
   }
 }
 

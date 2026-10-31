@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { BrandLink } from "@/components/brand-link";
 import { ProductCard } from "@/components/product-card";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { SiteHeader } from "@/components/site-header";
 import type { Product } from "@/lib/database.types";
 import { getSupabaseServerClient } from "@/lib/supabase";
 
@@ -143,13 +142,7 @@ async function CatalogPage({ searchParams }: { searchParams: SearchParams }) {
 
   return (
     <>
-      <header className="site-header">
-        <div className="site-brand-group">
-          <BrandLink />
-          <p>Garimpou, levou.</p>
-        </div>
-        <ThemeToggle />
-      </header>
+      <SiteHeader currentPage="products" />
 
       <section className="intro" aria-labelledby="page-title">
         <p className="eyebrow">Uma seleção feita a dedo</p>
