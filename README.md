@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Garimpo
 
-## Getting Started
+Site para produtos comissionados.
 
-First, run the development server:
+Vitrine de ofertas com Next.js App Router, React, Tailwind CSS e Supabase. O catálogo é consultado no servidor, com busca textual em português e paginação de 24 produtos.
 
-```bash
+## Configuração
+
+1. Configure o projeto Supabase e execute [`supabase/schema.sql`](./supabase/schema.sql) no SQL Editor caso ainda não tenha feito isso.
+2. Na Vercel, configure `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` nas variáveis de ambiente do projeto. Para desenvolvimento local, copie `.env.example` para `.env.local` e preencha as mesmas variáveis.
+3. O catálogo já foi migrado para a tabela `public.produtos`. Não há importador JSON neste projeto.
+4. A rotina do GitHub Actions em [`.github/workflows/sync-profile.yml`](./.github/workflows/sync-profile.yml) lê a lista pública “Minhas recomendações” a cada hora e atualiza o Supabase. Ela inclui o código de afiliado `matt_tool=51963698` nos links.
+5. Conecte o repositório GitHub à Vercel para publicar o site e habilite o GitHub Actions. Cadastre `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` em **Settings → Secrets and variables → Actions → New repository secret** no GitHub. O primeiro sincronismo pode ser iniciado na aba **Actions → Sync Mercado Livre profile → Run workflow**; os seguintes são agendados de hora em hora.
+6. A chave `service_role` é usada apenas pelo GitHub Actions para gravar no banco. Não a configure na Vercel, no `.env.local`, no `.env.example`, no navegador ou em variáveis `NEXT_PUBLIC_*`.
+
+O sincronizador importa os produtos exibidos publicamente no perfil; não consegue ler produtos privados ou outros itens da conta. Como o Mercado Livre não fornece um feed oficial para essa lista, a rotina interpreta a página pública e pode precisar de ajustes se o formato mudar ou o acesso automatizado for bloqueado. Em caso de erro, ela não apaga produtos já cadastrados. Verifique no painel de afiliados se o parâmetro `matt_tool` está atribuindo as comissões esperadas.
+
+## Desenvolvimento
+
+```powershell
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra <http://localhost:3000>. Para validar alterações:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```powershell
+npm run lint
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+A página busca no Supabase no servidor. A pesquisa consulta título e categoria; a paginação carrega 24 produtos por página.
 
-## Learn More
+Para testar a leitura da lista sem gravar no banco, execute no PowerShell:
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```powershell
+$env:MELI_AFFILIATE_TOOL = "51963698"
+npm run sync:profile -- --dry-run
+```

@@ -1,69 +1,208 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Suspense } from "react";
 
-export default function Home() {
+import { BrandLink } from "@/components/brand-link";
+import { ProductCard } from "@/components/product-card";
+import { ThemeToggle } from "@/components/theme-toggle";
+import type { Product } from "@/lib/database.types";
+import { getSupabaseServerClient } from "@/lib/supabase";
+
+const PAGE_SIZE = 24;
+const MAX_QUERY_LENGTH = 100;
+
+type SearchParams = Promise<{
+  page?: string | string[];
+  q?: string | string[];
+}>;
+
+type CatalogParams = {
+  page: number;
+  query: string;
+};
+
+function firstParam(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function pageUrl(page: number, query: string) {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  if (query) {
+    params.set("q", query);
+  }
+  return `/?${params.toString()}#produtos`;
+}
+
+async function ProductCatalog({ params }: { params: CatalogParams }) {
+  const supabase = getSupabaseServerClient();
+
+  if (!supabase) {
+    return (
+      <p className="notice" role="status">
+        Configure NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+        em <code>.env.local</code> para conectar o catálogo ao Supabase.
+      </p>
+    );
+  }
+
+  let request = supabase
+    .from("produtos")
+    .select(
+      "id, titulo, link, imagem, preco, preco_valor, categoria, criado_em, busca",
+      { count: "exact" },
+    )
+    .order("criado_em", { ascending: false });
+
+  if (params.query) {
+    request = request.textSearch("busca", params.query, {
+      config: "portuguese",
+      type: "websearch",
+    });
+  }
+
+  const offset = (params.page - 1) * PAGE_SIZE;
+  const result = await request.range(offset, offset + PAGE_SIZE - 1);
+
+  if (result.error) {
+    console.error("Supabase product query failed:", result.error.message);
+    return (
+      <p className="notice error" role="alert">
+        Não foi possível carregar os produtos. Confira o esquema SQL, as credenciais
+        públicas e as políticas RLS do Supabase.
+      </p>
+    );
+  }
+
+  const products = (result.data ?? []) as Product[];
+  const total = result.count ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  if (params.page > 1 && params.page > totalPages) {
+    return (
+      <div className="empty-state">
+        <h2>Essa página não existe</h2>
+        <Link href={pageUrl(1, params.query)}>Voltar ao catálogo</Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <>
+      <div className="catalog-summary" aria-live="polite">
+        <span>
+          {total} {total === 1 ? "produto encontrado" : "produtos encontrados"}
+        </span>
+        {params.query ? <span>Busca: “{params.query}”</span> : null}
+      </div>
+
+      {products.length > 0 ? (
+        <div className="product-grid">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <h2>{params.query ? "Nenhum produto encontrado" : "Seu catálogo está vazio"}</h2>
+          <p>
+            {params.query
+              ? "Tente outros termos para encontrar um achado."
+              : "Quando os produtos forem cadastrados no Supabase, eles aparecerão aqui."}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      )}
+
+      {totalPages > 1 ? (
+        <nav className="pagination" aria-label="Paginação do catálogo">
+          {params.page > 1 ? (
+            <Link href={pageUrl(params.page - 1, params.query)}>← Anterior</Link>
+          ) : (
+            <span className="pagination-disabled">← Anterior</span>
+          )}
+          <span>
+            Página {params.page} de {totalPages}
+          </span>
+          {params.page < totalPages ? (
+            <Link href={pageUrl(params.page + 1, params.query)}>Próxima →</Link>
+          ) : (
+            <span className="pagination-disabled">Próxima →</span>
+          )}
+        </nav>
+      ) : null}
+    </>
+  );
+}
+
+async function CatalogPage({ searchParams }: { searchParams: SearchParams }) {
+  const values = await searchParams;
+  const rawPage = Number.parseInt(firstParam(values.page) ?? "1", 10);
+  const params: CatalogParams = {
+    page: Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1,
+    query: (firstParam(values.q) ?? "").trim().slice(0, MAX_QUERY_LENGTH),
+  };
+
+  return (
+    <>
+      <header className="site-header">
+        <div className="site-brand-group">
+          <BrandLink />
+          <p>Garimpou, levou.</p>
         </div>
-      </main>
-    </div>
+        <ThemeToggle />
+      </header>
+
+      <section className="intro" aria-labelledby="page-title">
+        <p className="eyebrow">Uma seleção feita a dedo</p>
+        <h1 id="page-title">
+          Coisas boas.
+          <br />
+          <span>Preço justo.</span>
+        </h1>
+        <p className="intro-copy">
+          Produtos úteis e ofertas selecionadas para deixar o dia a dia melhor.
+        </p>
+        <form className="search-form" action="/" method="get" role="search">
+          <label htmlFor="product-search">O que você está procurando?</label>
+          <div className="search-controls">
+            <input
+              id="product-search"
+              type="search"
+              name="q"
+              maxLength={MAX_QUERY_LENGTH}
+              placeholder="Ex.: mochila, tênis, casa…"
+              defaultValue={params.query}
+            />
+            <button type="submit">Buscar</button>
+          </div>
+        </form>
+      </section>
+
+      <section className="catalog" id="produtos" aria-labelledby="catalog-title">
+        <div className="catalog-heading">
+          <div>
+            <p className="eyebrow">A seleção</p>
+            <h2 id="catalog-title">Achados recentes</h2>
+          </div>
+        </div>
+
+        <Suspense fallback={<p className="notice">Carregando produtos…</p>}>
+          <ProductCatalog params={params} />
+        </Suspense>
+      </section>
+
+      <footer className="site-footer">
+        <p>Preços e disponibilidade podem mudar. Confira as condições na loja.</p>
+      </footer>
+    </>
+  );
+}
+
+export default function Home({ searchParams }: { searchParams: SearchParams }) {
+  return (
+    <main>
+      <Suspense fallback={<p className="notice">Carregando catálogo…</p>}>
+        <CatalogPage searchParams={searchParams} />
+      </Suspense>
+    </main>
   );
 }
