@@ -1,5 +1,4 @@
 # Garimpo
-
 Site para produtos comissionados.
 
 Vitrine de ofertas com Next.js App Router, React, Tailwind CSS e Supabase. O catálogo é consultado no servidor, com busca textual em português e paginação de 24 produtos.
